@@ -1,9 +1,14 @@
 using UnityEngine;
 
-public class Crocodile : Enemy
+public class Crocodile : Enemy, IShootable
 {
     [SerializeField] float atkRange;
     public Player player;
+
+    [field:SerializeField]public GameObject Bullet { get ; set ; }
+    [field: SerializeField] public Transform ShootPoint { get ; set ; }
+    public float ReloadTime { get ; set; }
+    public float WaitTime { get ; set; }
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -14,10 +19,14 @@ public class Crocodile : Enemy
         //set atk range and target
         atkRange = 6.0f;
         player = GameObject.FindFirstObjectByType<Player>();
+
+        WaitTime = 0.0f;
+        ReloadTime = 5.0f;
     }
 
     private void FixedUpdate()
     {
+        WaitTime += Time.fixedDeltaTime;
         Behavior();
     }
 
@@ -35,7 +44,15 @@ public class Crocodile : Enemy
 
     public void Shoot()
     {
-        Debug.Log($"{this.name} shoots rock to the {player.name}!");
+        if (WaitTime >= ReloadTime)
+        {
+            var anim = GetComponent<Animator>();
+            anim.SetTrigger("Shoot");
+            var bullet = Instantiate(Bullet, ShootPoint.position, Quaternion.identity);
+            Rock rock = bullet.GetComponent<Rock>();
+            rock.InitWeapon(30, this);
+            WaitTime = 0;
+        }
     }
 
     // Update is called once per frame
